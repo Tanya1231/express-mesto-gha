@@ -10,12 +10,10 @@ const getCards = (req, res) => {
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create([{ name, link, owner: req.user._id }, { new: true }])
-    .then((card) => {
-      res.status(200).send({ data: card[0] });
-    })
+  Card.create([{ name, link, owner: req.user._id }], { new: true })
+    .then((card) => res.send({ data: card[0] }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(400).send({ message: 'Переданные данные не валидны', err });
         return;
       }
