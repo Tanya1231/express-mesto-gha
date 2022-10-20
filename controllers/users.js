@@ -51,11 +51,11 @@ const updateProfile = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Ошибка по умолчанию', err });
-        return;
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданные данные не валидны', err });
+      } else {
+        res.status(500).send({ message: 'Ошибка по умолчанию', err });
       }
-      res.status(500).send({ message: 'Ошибка по умолчанию', err });
     });
 };
 
@@ -70,11 +70,11 @@ const updateAvatar = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданные данные не валидны', err });
-        return;
+      } else {
+        res.status(500).send({ message: 'Ошибка по умолчанию', err });
       }
-      res.status(500).send({ message: 'Ошибка по умолчанию', err });
     });
 };
 
