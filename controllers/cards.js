@@ -34,7 +34,7 @@ const deleteCard = (req, res) => {
         res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
         return;
       }
-      res.status(SUCCESSFULLY).send(card);
+      res.send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -54,7 +54,7 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
     res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
     return;
   }
-  res.status(SUCCESSFULLY).send(card);
+  res.send(card);
 })
   .catch((err) => {
     if (err.name === 'CastError') {
@@ -73,7 +73,7 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
     res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
     return;
   }
-  res.status(SUCCESSFULLY).send(card);
+  res.send(card);
 })
   .catch((err) => {
     if (err.name === 'CastError') {
