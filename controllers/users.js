@@ -18,7 +18,7 @@ module.exports.getUserById = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданные данные не валидны', err });
         return;
       }
@@ -50,7 +50,7 @@ module.exports.updateProfile = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'SomeError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Ошибка по умолчанию', err });
         return;
       }
@@ -69,7 +69,7 @@ module.exports.updateAvatar = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданные данные не валидны', err });
         return;
       }
