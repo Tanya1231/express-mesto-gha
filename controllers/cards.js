@@ -2,24 +2,25 @@ const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((card) => res.status(200).send(card))
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка по умочанию' });
+    .then((card) => res.status(200).send({ data: card }))
+    .catch((err) => {
+      res.status(500).send({ message: 'Ошибка по умолчанию', err });
     });
 };
 
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id }, { new: true })
+  const owner = req.user._id;
+  Card.create([{ name, link, owner }, { new: true }])
     .then((card) => {
-      res.status(200).send(card);
+      res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные в методы создания карточки' });
+        res.status(400).send({ message: 'Переданные данные не валидны', err });
         return;
       }
-      res.status(500).send({ message: 'Ошибка по умочанию' });
+      res.status(500).send({ message: 'Ошибка по умолчанию', err });
     });
 };
 
@@ -73,7 +74,7 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
 })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(400).send({ message: 'Переданны неккоректные данные для снятия лайка карточки' });
+      res.status(400).send({ message: 'Переданны неккоректные данные для лайка карточки' });
     } else {
       res.status(500).send({ message: 'Ошибка по умолчанию' });
     }

@@ -5,9 +5,9 @@ const { Schema } = mongoose;
 const cardSchema = new Schema({
   name: {
     type: String,
-    require: true,
     minlength: 2,
     maxlength: 30,
+    require: true,
   },
   link: {
     type: String,
