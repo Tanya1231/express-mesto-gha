@@ -5,9 +5,9 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
   name: {
     type: String,
+    require: true,
     minlength: 2,
     maxlength: 30,
-    require: true,
   },
   about: {
     type: String,

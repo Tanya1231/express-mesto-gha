@@ -2,7 +2,7 @@ const Card = require('../models/card');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .then((card) => res.status(200).send({ data: card }))
+    .then((cards) => res.status(200).send({ data: cards }))
     .catch((err) => {
       res.status(500).send({ message: 'Ошибка по умолчанию', err });
     });
