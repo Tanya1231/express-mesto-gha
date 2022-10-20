@@ -48,7 +48,7 @@ const updateProfile = (req, res) => {
         res.status(404).send({ message: 'User с указанным _id не найдена' });
         return;
       }
-      res.status(200).send(user);
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
@@ -67,7 +67,7 @@ const updateAvatar = (req, res) => {
         res.status(404).send({ message: 'User с указанным _id не найдена' });
         return;
       }
-      res.status(200).send(user);
+      res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
