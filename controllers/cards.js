@@ -1,7 +1,5 @@
 const Card = require('../models/card');
 
-const ERROR_CODE = 400;
-
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(200).send(cards))
@@ -12,11 +10,11 @@ const getCards = (req, res) => {
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id }, { new: true })
-    .then((card) => res.send(card))
+  Card.create([{ name, link, owner: req.user._id }], { new: true })
+    .then((card) => res.send({ data: card[0] }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны', err });
+        res.status(400).send({ message: 'Переданные данные не валидны', err });
         return;
       }
       res.status(500).send({ message: 'Ошибка по умолчанию', err });
@@ -35,7 +33,7 @@ const deleteCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({ message: 'Переданны неккоректные данные для удаления карточки' });
+        res.status(400).send({ message: 'Переданны неккоректные данные для удаления карточки' });
       } else {
         res.status(500).send({ message: 'Ошибка по умолчанию' });
       }
@@ -55,7 +53,7 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
 })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE).send({ message: 'Переданны неккоректные данные для лайка карточки' });
+      res.status(400).send({ message: 'Переданны неккоректные данные для лайка карточки' });
     } else {
       res.status(500).send({ message: 'Ошибка по умолчанию' });
     }
@@ -74,7 +72,7 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
 })
   .catch((err) => {
     if (err.name === 'CastError') {
-      res.status(ERROR_CODE).send({ message: 'Переданны неккоректные данные для лайка карточки' });
+      res.status(400).send({ message: 'Переданны неккоректные данные для лайка карточки' });
     } else {
       res.status(500).send({ message: 'Ошибка по умолчанию' });
     }
