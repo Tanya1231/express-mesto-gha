@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (req, res) => {
+const getCards = (req, res) => {
   Card.find({})
     .then((cards) => res.status(200).send(cards))
     .catch((err) => {
@@ -8,12 +8,11 @@ module.exports.getCards = (req, res) => {
     });
 };
 
-module.exports.createCard = (req, res) => {
+const createCard = (req, res) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
-  Card.create([{ name, link, owner }, { new: true }])
+  Card.create([{ name, link, owner: req.user._id }, { new: true }])
     .then((card) => {
-      res.status(200).send({ data: card });
+      res.status(200).send({ data: card[0] });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -24,8 +23,9 @@ module.exports.createCard = (req, res) => {
     });
 };
 
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+const deleteCard = (req, res) => {
+  const { cardId } = req.params;
+  Card.findByIdAndRemove({ _id: cardId })
     .then((card) => {
       if (card === null) {
         res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
@@ -42,7 +42,7 @@ module.exports.deleteCard = (req, res) => {
     });
 };
 
-module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
+const likeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
   { new: true },
@@ -61,7 +61,7 @@ module.exports.likeCard = (req, res) => Card.findByIdAndUpdate(
     }
   });
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
+const dislikeCard = (req, res) => Card.findByIdAndUpdate(
   req.params.cardId,
   { $pull: { likes: req.user._id } }, // убрать _id из массива
   { new: true },
@@ -79,3 +79,11 @@ module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
       res.status(500).send({ message: 'Ошибка по умолчанию' });
     }
   });
+
+module.exports = {
+  getCards,
+  createCard,
+  deleteCard,
+  likeCard,
+  dislikeCard,
+};
