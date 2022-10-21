@@ -1,9 +1,11 @@
 const Card = require('../models/card');
-const { ERROR_CODE, NOT_FOUND, SERVER__ERROR } = require('../utils/utils');
+const {
+  ERROR_CODE, NOT_FOUND, SERVER__ERROR, SUCCESSFULLY,
+} = require('../utils/utils');
 
 const getCards = (req, res) => {
   Card.find({})
-    .then((cards) => res.send(cards))
+    .then((cards) => res.status(SUCCESSFULLY).send(cards))
     .catch(() => {
       res.status(SERVER__ERROR).send({ message: 'Ошибка по умолчанию' });
     });
@@ -11,8 +13,8 @@ const getCards = (req, res) => {
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id }, { new: true })
-    .then((card) => res.send(card))
+  Card.create([{ name, link, owner: req.user._id }], { new: true })
+    .then((card) => res.send({ data: card[0] }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
@@ -30,7 +32,7 @@ const deleteCard = (req, res) => {
         res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
         return;
       }
-      res.send(card);
+      res.status(SUCCESSFULLY).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -50,7 +52,7 @@ const likeCard = (req, res) => Card.findByIdAndUpdate(
     res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
     return;
   }
-  res.send(card);
+  res.status(SUCCESSFULLY).send(card);
 })
   .catch((err) => {
     if (err.name === 'CastError') {
@@ -69,7 +71,7 @@ const dislikeCard = (req, res) => Card.findByIdAndUpdate(
     res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
     return;
   }
-  res.send(card);
+  res.status(SUCCESSFULLY).send(card);
 })
   .catch((err) => {
     if (err.name === 'CastError') {
