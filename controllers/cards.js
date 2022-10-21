@@ -23,7 +23,8 @@ const createCard = (req, res) => {
 };
 
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params._id, { new: true, runValidators: true })
+  const { cardId } = req.params;
+  Card.findByIdAndRemove({ _id: cardId }, { new: true, runValidators: true })
     .then((card) => {
       if (card === null) {
         res.status(NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена' });
