@@ -13,8 +13,8 @@ const getCards = (req, res) => {
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
-  Card.create({ name, link, owner: req.user._id }, { new: true })
-    .then((card) => res.send({ data: card }))
+  Card.create([{ name, link, owner: req.user._id }], { new: true })
+    .then((card) => res.send({ data: card[0] }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
