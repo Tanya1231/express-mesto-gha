@@ -26,6 +26,13 @@ app.use('*', (req, res) => {
   res.status(NOT_FOUND).send({ message: 'Страницы не существует' });
 });
 
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = statusCode === 500 ? 'Ошибка на сервере' : err.message;
+  res.status(statusCode).send({ message });
+  next();
+});
+
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
