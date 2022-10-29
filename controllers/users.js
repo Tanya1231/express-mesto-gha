@@ -1,81 +1,116 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { ERROR_CODE, NOT_FOUND, SERVER__ERROR } = require('../utils/utils');
+const ErrorCode = require('../errors/ErrorCode');
+const ErrorConflict = require('../errors/ErrorConflict');
+const ErrorNotFound = require('../errors/ErrorNotFound');
+const ErrorServer = require('../errors/ErrorServer');
+const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
-const getUsers = (req, res) => {
+const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => {
-      res.send({ message: 'Ошибка по умолчанию' });
-    });
+    .catch(() => next(new ErrorServer('Ошибка по умолчанию')));
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
   User.findById({ _id: userId })
     .then((user) => {
       if (user === null) {
-        res.status(NOT_FOUND).send({ message: 'User с указанным _id не найдена' });
+        next(new ErrorNotFound('User с указанным _id не найдена'));
         return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
+        next(new ErrorCode('Переданные данные не валидны'));
         return;
       }
-      res.status(SERVER__ERROR).send({ message: 'Ошибка по умолчанию' });
+      next(new ErrorServer('Ошибка по умолчанию'));
     });
 };
 
-const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
-        return;
-      }
-      res.status(SERVER__ERROR).send({ message: 'Ошибка по умолчанию' });
+const createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  try {
+    const hashedPassword = bcrypt.hash(password, 10);
+    const user = User.create({
+      name, about, avatar, email, password: hashedPassword,
     });
+    return res.send(user);
+  } catch (err) {
+    if (err.name === 'ValidationError') {
+      return next(new ErrorCode('Переданные данные не валидны'));
+    }
+    if (err.code === 1000) {
+      return next(new ErrorConflict('Пользователь с указанным email не найден'));
+    }
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
 };
 
-const updateProfile = (req, res) => {
+const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        res.status(NOT_FOUND).send({ message: 'User с указанным _id не найдена' });
+        next(new ErrorCode('User с указанным _id не найдена'));
         return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
-      } else {
-        res.status(SERVER__ERROR).send({ message: 'Ошибка по умолчанию' });
+        return next(new ErrorCode('Переданные данные не валидны'));
       }
+      return next(new ErrorServer('Ошибка по умолчанию'));
     });
 };
 
-const updateAvatar = (req, res) => {
+const login = (req, res, next) => {
+  const { password, email } = req.body;
+  try {
+    const user = User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+    }
+    const userValid = bcrypt.compare(password, user.password);
+    if (!userValid) {
+      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+    }
+    const token = jwt.sign({ _id: user._id }, 'some-secret-key');
+    res.cookie('jwt', token, { expiresIn: '7d' });
+    return res.send(user.toJSON());
+  } catch (err) {
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
+};
+
+const getMyInfo = (req, res) => {
+  User.findById(req.user._id)
+    .then((user) => {
+      res.send({ user });
+    });
+};
+
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        res.status(NOT_FOUND).send({ message: 'User с указанным _id не найдена' });
-        return;
+        return next(new ErrorNotFound('User с указанным _id не найдена'));
       }
-      res.send(user);
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
-        res.status(ERROR_CODE).send({ message: 'Переданные данные не валидны' });
-      } else {
-        res.status(SERVER__ERROR).send({ message: 'Ошибка по умолчанию' });
+        return next(new ErrorCode('Переданные данные не валидны'));
       }
+      return next(new ErrorServer('Ошибка по умолчанию'));
     });
 };
 
@@ -85,4 +120,6 @@ module.exports = {
   createUser,
   updateProfile,
   updateAvatar,
+  login,
+  getMyInfo,
 };
