@@ -84,17 +84,23 @@ const login = (req, res, next) => {
     }
     const token = jwt.sign({ _id: user._id }, 'some-secret-key');
     res.cookie('jwt', token, { expiresIn: '7d' });
-    return res.send(user.toJSON());
+    return res.status(200).send(user.toJSON());
   } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
 };
 
-const getMyInfo = (req, res) => {
-  User.findById(req.user._id)
-    .then((user) => {
-      res.send({ user });
-    });
+const getMyInfo = (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const user = User.findById(userId);
+    if (!user) {
+      return next(new ErrorNotFound('Указанный пользователь не найден'));
+    }
+    return res.send(user);
+  } catch (err) {
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
 };
 
 const updateAvatar = (req, res, next) => {
