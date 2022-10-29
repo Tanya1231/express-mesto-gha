@@ -8,18 +8,21 @@ const userSchema = new Schema({
   name: {
     type: String,
     default: 'Жак-Ив-Кусто',
-    minlength: 2,
-    maxlength: 30,
+    required: [true, 'Обязательное поле'],
+    minlength: [2, 'Минимальная длина поля 2 символа'],
+    maxlength: [30, 'Максимальная длина поля 30 символов'],
   },
   about: {
     type: String,
     default: 'Исследователь',
-    minlength: 2,
-    maxlength: 30,
+    required: [true, 'Обязательное поле'],
+    minlength: [2, 'Минимальная длина поля 2 символа'],
+    maxlength: [30, 'Максимальная длина поля 30 символов'],
   },
   avatar: {
     type: String,
     default: 'https://chance4traveller.com/wp-content/uploads/2021/02/b96ce22cfdae9849ce9daeb32b5b4da3.jpg',
+    required: [true, 'Обязательное поле'],
     validate: {
       validator(v) {
         return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w._]*)*\/?$/.test(v);
@@ -29,7 +32,7 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    required: true,
+    required: [true, 'Обязательное поле'],
     unique: true,
     validate: {
       validator: validator.isEmail,
@@ -38,7 +41,7 @@ const userSchema = new Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: [true, 'Обязательное поле'],
     select: false,
   },
 }, {
