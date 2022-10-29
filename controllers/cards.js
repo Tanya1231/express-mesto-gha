@@ -4,19 +4,19 @@ const ErrorForbidden = require('../errors/ErrorForbidden');
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorServer = require('../errors/ErrorServer');
 
-const getCards = (req, res, next) => {
+const getCards = async (req, res, next) => {
   try {
-    const cards = Card.find({});
+    const cards = await Card.find({});
     return res.send(cards);
   } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
 };
 
-const createCard = (req, res, next) => {
+const createCard = async (req, res, next) => {
   const { name, link } = req.body;
   try {
-    const card = Card.create({ name, link, owner: req.user._id }, { new: true });
+    const card = await Card.create({ name, link, owner: req.user._id });
     return res.send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -26,11 +26,11 @@ const createCard = (req, res, next) => {
   }
 };
 
-const deleteCard = (req, res, next) => {
+const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   const owner = req.user._id;
   try {
-    const card = Card.findByIdAndRemove({ _id: cardId }, { new: true, runValidators: true });
+    const card = await Card.findByIdAndRemove({ _id: cardId }, { new: true, runValidators: true });
     if (card === null) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
@@ -47,10 +47,10 @@ const deleteCard = (req, res, next) => {
   }
 };
 
-const likeCard = (req, res, next) => {
+const likeCard = async (req, res, next) => {
   const { cardId } = req.params;
   try {
-    const card = Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       cardId,
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
@@ -67,10 +67,10 @@ const likeCard = (req, res, next) => {
   }
 };
 
-const dislikeCard = (req, res, next) => {
+const dislikeCard = async (req, res, next) => {
   const { cardId } = req.params;
   try {
-    const card = Card.findByIdAndUpdate(
+    const card = await Card.findByIdAndUpdate(
       cardId,
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },

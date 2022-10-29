@@ -13,7 +13,7 @@ const getUsers = (req, res, next) => {
     .catch(() => next(new ErrorServer('Ошибка по умолчанию')));
 };
 
-const getUserById = (req, res, next) => {
+const getUserById = async (req, res, next) => {
   const { userId } = req.params;
   User.findById({ _id: userId })
     .then((user) => {
@@ -32,13 +32,13 @@ const getUserById = (req, res, next) => {
     });
 };
 
-const createUser = (req, res, next) => {
+const createUser = async (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   try {
     const hashedPassword = bcrypt.hash(password, 10);
-    const user = User.create({
+    const user = await User.create({
       name, about, avatar, email, password: hashedPassword,
     });
     return res.send(user);
@@ -53,7 +53,7 @@ const createUser = (req, res, next) => {
   }
 };
 
-const updateProfile = (req, res, next) => {
+const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
@@ -71,10 +71,10 @@ const updateProfile = (req, res, next) => {
     });
 };
 
-const login = (req, res, next) => {
+const login = async (req, res, next) => {
   const { password, email } = req.body;
   try {
-    const user = User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
     }
@@ -90,10 +90,10 @@ const login = (req, res, next) => {
   }
 };
 
-const getMyInfo = (req, res, next) => {
+const getMyInfo = async (req, res, next) => {
   try {
     const userId = req.user._id;
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
     if (!user) {
       return next(new ErrorNotFound('Указанный пользователь не найден'));
     }

@@ -3,9 +3,6 @@ const jwt = require('jsonwebtoken');
 const auth = (req, res, next) => {
   const token = req.cookies.jwt;
   let payload;
-  if (!token) {
-    res.status(401).send({ message: 'Необходима авторизация' });
-  }
   try {
     payload = jwt.verify(token, 'super-strong-secret');
   } catch (err) {

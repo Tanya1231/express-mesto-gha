@@ -18,8 +18,6 @@ app.use(cookieParser());
 
 app.use(express.json());
 
-app.use(errors());
-
 app.use('/users', require('./routes/users'));
 
 app.use('/cards', require('./routes/cards'));
@@ -31,3 +29,5 @@ app.use('*', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
+
+app.use(errors());
