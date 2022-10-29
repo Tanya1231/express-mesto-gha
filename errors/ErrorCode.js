@@ -1,6 +1,6 @@
 class ErrorCode extends Error {
   constructor(message) {
-    super(massage);
+    super(message);
     this.status(400);
   }
 }

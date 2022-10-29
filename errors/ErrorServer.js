@@ -1,6 +1,6 @@
 class ErrorServer extends Error {
   constructor(message) {
-    super(massage);
+    super(message);
     this.status(500);
   }
 }

@@ -1,6 +1,6 @@
 class ErrorForbidden extends Error {
   constructor(message) {
-    super(massage);
+    super(message);
     this.status(403);
   }
 }
