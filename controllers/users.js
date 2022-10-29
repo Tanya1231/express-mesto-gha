@@ -58,7 +58,7 @@ const updateProfile = async (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (user === null) {
-        next(new ErrorCode('User с указанным _id не найдена'));
+        next(new ErrorNotFound('User с указанным _id не найдена'));
         return;
       }
       res.send(user);
