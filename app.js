@@ -26,6 +26,8 @@ app.use('*', (req, res) => {
   res.status(NOT_FOUND).send({ message: 'Страницы не существует' });
 });
 
+app.use(errors());
+
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
   const message = statusCode === 500 ? 'Ошибка на сервере' : err.message;
@@ -36,5 +38,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
-
-app.use(errors());

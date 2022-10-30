@@ -25,7 +25,7 @@ const userSchema = new Schema({
     required: [true, 'Обязательное поле'],
     validate: {
       validator(v) {
-        return /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w._]*)*\/?$/.test(v);
+        return /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/.test(v);
       },
       message: 'Ошибка ссылка невалидна',
     },
