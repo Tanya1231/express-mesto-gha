@@ -36,21 +36,29 @@ const createUser = async (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      name, about, avatar, email, password: hashedPassword,
-    });
-    return res.send(user);
-  } catch (err) {
-    if (err.name === 'ValidationError') {
-      return next(new ErrorCode('Переданные данные не валидны'));
-    }
-    if (err.code === 11000) {
-      return next(new ErrorConflict(`Пользователь с указанным email ${email} уже существует`));
-    }
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name, about, avatar, email, password: hash,
+    })
+      .then((user) => {
+        const userData = {
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+          _id: user._id,
+        };
+        res.send(userData);
+      })
+      .catch((err) => {
+        if (err.name === 'ValidationError') {
+          next(new ErrorCode('Переданные данные не валидны'));
+        } else if (err.code === 11000) {
+          next(new ErrorConflict(`Пользователь с указанным email ${email} уже существует`));
+        } else {
+          next(new ErrorServer('Ошибка по умолчанию'));
+        }
+      }));
 };
 
 const updateProfile = async (req, res, next) => {
