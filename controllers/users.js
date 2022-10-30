@@ -5,7 +5,7 @@ const ErrorCode = require('../errors/ErrorCode');
 const ErrorConflict = require('../errors/ErrorConflict');
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorServer = require('../errors/ErrorServer');
-const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
+// const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -71,23 +71,21 @@ const updateProfile = async (req, res, next) => {
     });
 };
 
-const login = async (req, res, next) => {
+const login = (req, res, next) => {
   const { password, email } = req.body;
-  try {
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
-    }
-    const userValid = bcrypt.compare(password, user.password);
-    if (!userValid) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
-    }
-    const token = jwt.sign({ _id: user._id }, 'some-secret-key');
-    res.cookie('jwt', token, { expiresIn: '7d' });
-    return res.status(200).send(user.toJSON());
-  } catch (err) {
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
+  User.findUserByCredentials(email, password)
+    .then((user) => {
+      if (!user) {
+        next(new ErrorNotFound('Указанный пользователь не найден'));
+      }
+      const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+      res.cookie('access_token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+      })
+        .send({ message: 'Аутенфикация прошла успешно' });
+    })
+    .catch(next);
 };
 
 const getMyInfo = async (req, res, next) => {

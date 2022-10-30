@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+// const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors, celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
@@ -12,10 +12,10 @@ const { PORT = 3000 } = process.env;
 const app = express();
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-// app.use(express.json());
+app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
+//  app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(express.json());
@@ -32,16 +32,16 @@ app.post('/signup', celebrate({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/),
-    email: Joi.string().required().email({ tlds: { allow: false } }),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), createUser);
 
+app.use(auth);
+
 app.use('/users', require('./routes/users'));
 
 app.use('/cards', require('./routes/cards'));
-
-app.use(auth);
 
 app.use('*', (req, res) => {
   res.status(NOT_FOUND).send({ message: 'Страницы не существует' });
