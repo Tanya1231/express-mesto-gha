@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
+const { createUser, login } = require('./controllers/users');
+const { auth } = require('./middlewares/auth');
 
 const NOT_FOUND = 404;
 
@@ -17,6 +19,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(express.json());
+
+app.post('/signup', auth, createUser);
+
+app.post('/signin', auth, login);
 
 app.use('/users', require('./routes/users'));
 

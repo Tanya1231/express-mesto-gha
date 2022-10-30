@@ -21,7 +21,7 @@ const userSchema = new Schema({
   },
   avatar: {
     type: String,
-    default: 'https://chance4traveller.com/wp-content/uploads/2021/02/b96ce22cfdae9849ce9daeb32b5b4da3.jpg',
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     required: [true, 'Обязательное поле'],
     validate: {
       validator(v) {
