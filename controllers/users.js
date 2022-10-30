@@ -46,8 +46,8 @@ const createUser = async (req, res, next) => {
     if (err.name === 'ValidationError') {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
-    if (err.code === 1000) {
-      return next(new ErrorConflict('Пользователь с указанным email не найден'));
+    if (err.code === 11000) {
+      return next(new ErrorConflict(`Пользователь с указанным email ${email} уже существует`));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
