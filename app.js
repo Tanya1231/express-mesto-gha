@@ -8,6 +8,7 @@ const { cardRoutes } = require('./routes/cards');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 
 const { PORT = 3000 } = process.env;
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 const app = express();
 
@@ -32,16 +33,6 @@ app.use((err, req, res, next) => {
   next();
 });
 
-async function main() {
-  try {
-    await mongoose.connect('mongodb://localhost:27017/mestodb', {
-      useNewUrlParser: true,
-      useUnifiedTopology: false,
-    });
-    await app.listen(PORT);
-    console.log(`Listening on port ${PORT}`);
-  } catch (err) {
-    console.log(err);
-  }
-}
-main();
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}`);
+});
