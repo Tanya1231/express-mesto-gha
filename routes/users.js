@@ -26,23 +26,25 @@ userRoutes.post('/signin', celebrate({
   }),
 }), login);
 
-userRoutes.get('/users', auth, getUsers);
-userRoutes.get('/users/me', auth, getMyInfo);
+userRoutes(auth);
+
+userRoutes.get('/users', getUsers);
+userRoutes.get('/users/me', getMyInfo);
 userRoutes.get('/users/:userId', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().length(24).hex(),
   }),
-}), auth, getUserById);
+}), getUserById);
 userRoutes.patch('/users/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
   }),
-}), auth, updateProfile);
+}), updateProfile);
 userRoutes.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().required().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/),
   }),
-}), auth, updateAvatar);
+}), updateAvatar);
 
 module.exports = { userRoutes };
