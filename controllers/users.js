@@ -19,13 +19,13 @@ const getUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
   const { userId } = req.params;
   try {
-    const user = User.findById({ userId });
-    if (user === null) {
-      return next(new ErrorNotFound('User с указанным _id не найдена'));
+    const user = await User.findById(userId);
+    if (user) {
+      return res.send(user);
     }
-    return res.send(user);
+    return next(new ErrorNotFound('Указанный пользователь не найден'));
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.kind === 'ObjectId') {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
@@ -57,13 +57,17 @@ const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
   const owner = req.user._id;
   try {
-    const user = User.findByIdAndUpdate(owner, { name, about }, { new: true, runValidators: true });
-    if (user === null) {
+    const user = await User.findByIdAndUpdate(
+      owner,
+      { name, about },
+      { new: true, runValidators: true },
+    );
+    if (!user) {
       return next(new ErrorNotFound('User с указанным _id не найдена'));
     }
     return res.send(user);
   } catch (err) {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
+    if (err.name === 'ValidationError') {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
@@ -71,9 +75,9 @@ const updateProfile = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { password, email } = req.body;
+  const { email, password } = req.body;
   try {
-    const user = User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
     }
@@ -85,9 +89,11 @@ const login = async (req, res, next) => {
       _id: user._id,
     }, 'SECRET');
     res.cookie('jwt', token, {
-      expiresIn: '7d',
+      maxAge: 3600000,
+      httpOnly: true,
+      sameSite: true,
     });
-    return res.status(200).send({ message: 'Аутенфикация прошла успешно' });
+    return res.status(200).send(user.toJSON());
   } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
@@ -114,12 +120,12 @@ const updateAvatar = async (req, res, next) => {
       { avatar },
       { new: true, runValidators: true },
     );
-    if (user === null) {
+    if (!user) {
       return next(new ErrorNotFound('User с указанным _id не найдена'));
     }
     return res.send(user);
   } catch (err) {
-    if (err.name === 'CastError' || err.name === 'ValidationError') {
+    if (err.name === 'ValidationError') {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));

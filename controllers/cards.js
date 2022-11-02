@@ -32,13 +32,12 @@ const deleteCard = async (req, res, next) => {
   const owner = req.user._id;
   try {
     const card = await Card.findByIdAndRemove(cardId);
-    if (card === null) {
+    if (!card) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
     if (owner !== card.owner.toString()) {
       return next(new ErrorForbidden('Вы не можете удалить чужую карточку'));
     }
-    await Card.findByIdAndRemove(cardId);
     return res.send({ message: 'Карточка удалена' });
   } catch (err) {
     if (err.name === 'CastError') {
@@ -56,12 +55,12 @@ const likeCard = async (req, res, next) => {
       { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
       { new: true },
     );
-    if (card === null) {
+    if (!card) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
     return res.send(card);
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.kind === 'ObjectId') {
       return next(new ErrorCode('Переданны неккоректные данные для лайка карточки'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
@@ -76,7 +75,7 @@ const dislikeCard = async (req, res, next) => {
       { $pull: { likes: req.user._id } }, // убрать _id из массива
       { new: true },
     );
-    if (card === null) {
+    if (!card) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
     return res.send(card);

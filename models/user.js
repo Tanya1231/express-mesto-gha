@@ -32,8 +32,7 @@ const userSchema = new Schema({
   email: {
     type: String,
     unique: true,
-    required: true,
-    index: true,
+    required: [true, 'Обязательное поле'],
     validate: {
       validator: validator.isEmail,
       message: 'Неверно заполнен email',
@@ -44,6 +43,8 @@ const userSchema = new Schema({
     required: [true, 'Обязательное поле'],
     select: false,
   },
+}, {
+  versionKey: false,
 });
 
 userSchema.methods.toJSON = function () {
