@@ -54,7 +54,7 @@ const getUserById = async (req, res, next) => {
   const { userId } = req.params;
   try {
     const user = User.findById({ userId });
-    if (user === null) {
+    if (!user) {
       return next(new ErrorNotFound('User с указанным _id не найдена'));
     }
     return res.send(user);

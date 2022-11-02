@@ -26,6 +26,8 @@ userRoutes.post('/signin', celebrate({
   }),
 }), login);
 
+userRoutes.use(auth);
+
 userRoutes.get('/users', auth, getUsers);
 userRoutes.get('/users/me', auth, getMyInfo);
 userRoutes.get('/users/:userId', celebrate({
@@ -43,6 +45,6 @@ userRoutes.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
     avatar: Joi.string().required().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/),
   }),
-}), auth, updateAvatar);
+}), updateAvatar);
 
 module.exports = { userRoutes };
