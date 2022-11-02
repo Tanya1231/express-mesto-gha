@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 const validator = require('validator');
-const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
 
 const { Schema } = mongoose;
 
@@ -33,8 +31,8 @@ const userSchema = new Schema({
   },
   email: {
     type: String,
-    required: [true, 'Обязательное поле'],
     unique: true,
+    required: [true, 'Обязательное поле'],
     validate: {
       validator: validator.isEmail,
       message: 'Неверно заполнен email',
@@ -45,25 +43,12 @@ const userSchema = new Schema({
     required: [true, 'Обязательное поле'],
     select: false,
   },
-}, {
-  versionKey: false,
 });
 
-userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({ email }).select('+password')
-    .then((user) => {
-      if (!user) {
-        throw new ErrorUnauthorized('Неправильные почта или пароль');
-      }
-
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            throw new ErrorUnauthorized('Неправильные почта или пароль');
-          }
-          return user;
-        });
-    });
+userSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  return user;
 };
 
 module.exports = mongoose.model('user', userSchema);
