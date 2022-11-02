@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ErrorCode = require('../errors/ErrorCode');
@@ -6,6 +6,31 @@ const ErrorConflict = require('../errors/ErrorConflict');
 const ErrorNotFound = require('../errors/ErrorNotFound');
 const ErrorServer = require('../errors/ErrorServer');
 const ErrorUnauthorized = require('../errors/ErrorUnauthorized');
+
+const getUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({});
+    return res.send(users);
+  } catch (err) {
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
+};
+
+const getUserById = async (req, res, next) => {
+  const { userId } = req.params;
+  try {
+    const user = User.findById({ userId });
+    if (user === null) {
+      return next(new ErrorNotFound('User с указанным _id не найдена'));
+    }
+    return res.send(user);
+  } catch (err) {
+    if (err.name === 'CastError') {
+      return next(new ErrorCode('Переданные данные не валидны'));
+    }
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
+};
 
 const createUser = async (req, res, next) => {
   const {
@@ -28,44 +53,6 @@ const createUser = async (req, res, next) => {
   }
 };
 
-const getUsers = async (req, res, next) => {
-  try {
-    const users = await User.find({});
-    return res.send(users);
-  } catch (err) {
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
-};
-
-const getMyInfo = async (req, res, next) => {
-  try {
-    const userId = req.user._id;
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(new ErrorNotFound('Указанный пользователь не найден'));
-    }
-    return res.status(200).send(user);
-  } catch (err) {
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
-};
-
-const getUserById = async (req, res, next) => {
-  const { userId } = req.params;
-  try {
-    const user = User.findById({ userId });
-    if (!user) {
-      return next(new ErrorNotFound('User с указанным _id не найдена'));
-    }
-    return res.send(user);
-  } catch (err) {
-    if (err.name === 'CastError') {
-      return next(new ErrorCode('Переданные данные не валидны'));
-    }
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
-};
-
 const updateProfile = async (req, res, next) => {
   const { name, about } = req.body;
   const owner = req.user._id;
@@ -79,6 +66,42 @@ const updateProfile = async (req, res, next) => {
     if (err.name === 'CastError' || err.name === 'ValidationError') {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
+};
+
+const login = async (req, res, next) => {
+  const { password, email } = req.body;
+  try {
+    const user = User.findOne({ email }).select('+password');
+    if (!user) {
+      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+    }
+    const userValid = await bcrypt.compare(password, user.password);
+    if (!userValid) {
+      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+    }
+    const token = jwt.sign({
+      _id: user._id,
+    }, 'SECRET');
+    res.cookie('jwt', token, {
+      expiresIn: '7d',
+    });
+    return res.status(200).send({ message: 'Аутенфикация прошла успешно' });
+  } catch (err) {
+    return next(new ErrorServer('Ошибка по умолчанию'));
+  }
+};
+
+const getMyInfo = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ErrorNotFound('Указанный пользователь не найден'));
+    }
+    return res.send(user);
+  } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
 };
@@ -103,36 +126,12 @@ const updateAvatar = async (req, res, next) => {
   }
 };
 
-const login = async (req, res, next) => {
-  const { email, password } = req.body;
-  try {
-    const user = User.findOne({ email }).select('+password');
-    if (!user) {
-      return next(new ErrorServer('Неверно введена почта или пароль'));
-    }
-    const userValid = await bcrypt.compare(password, user.password);
-    if (!userValid) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
-    }
-    const token = jwt.sign({ _id: user._id }, 'SECRET');
-    res.cookie('jwt', token, {
-      maxAge: 3600000,
-      httpOnly: true,
-      sameSite: true,
-      token: `JWT${token}`,
-    });
-    return res.status(200).send(user);
-  } catch (error) {
-    return next(new ErrorServer('Ошибка по умолчанию'));
-  }
-};
-
 module.exports = {
-  createUser,
   getUsers,
   getUserById,
-  getMyInfo,
+  createUser,
   updateProfile,
   updateAvatar,
   login,
+  getMyInfo,
 };
