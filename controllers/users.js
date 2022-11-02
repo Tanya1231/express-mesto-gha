@@ -116,7 +116,7 @@ const updateAvatar = async (req, res, next) => {
   const { avatar } = req.body;
   const owner = req.user._id;
   try {
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
       owner,
       { avatar },
       { new: true, runValidators: true },

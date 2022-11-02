@@ -4,11 +4,18 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 mongoose.connect('mongodb://localhost:27017/mestodb');
+const method = (value) => {
+  const result = validator.isURL(value);
+  if (result) {
+    return value;
+  } throw new Error('URL validation err');
+};
 
 const app = express();
 
@@ -30,8 +37,8 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30).default('Жак-Ив Кусто'),
     about: Joi.string().min(2).max(30).default('Исследователь'),
-    avatar: Joi.string().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/),
-    email: Joi.string().required().email().default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    avatar: Joi.string().custom(method).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+    email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), createUser);

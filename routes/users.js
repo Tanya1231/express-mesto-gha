@@ -1,10 +1,18 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
 const auth = require('../middlewares/auth');
 
 const {
   getUsers, getUserById, updateProfile, updateAvatar, getMyInfo,
 } = require('../controllers/users');
+
+const method = (value) => {
+  const result = validator.isURL(value);
+  if (result) {
+    return value;
+  } throw new Error('URL validation err');
+};
 
 router.get('/', auth, getUsers);
 router.get('/me', auth, getMyInfo);
@@ -23,7 +31,7 @@ router.patch('/me', celebrate({
 
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().required().pattern(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\\+~#=]+\.[a-zA-Z0-9()]+([-a-zA-Z0-9()@:%_\\+.~#?&/=#]*)/),
+    avatar: Joi.string().required().custom(method).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
   }),
 }), auth, updateAvatar);
 
