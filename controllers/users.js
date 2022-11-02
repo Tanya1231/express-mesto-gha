@@ -123,7 +123,7 @@ const login = async (req, res, next) => {
       sameSite: true,
     });
     return res.status(200).send(user.toJSON());
-  } catch (err) {
+  } catch (error) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
 };
