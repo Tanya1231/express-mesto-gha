@@ -114,15 +114,14 @@ const login = async (req, res, next) => {
     if (!userValid) {
       return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
     }
-    const token = jwt.sign({
-      _id: user._id,
-    }, 'SECRET');
+    const token = jwt.sign({ _id: user._id }, 'SECRET');
     res.cookie('jwt', token, {
       maxAge: 3600000,
       httpOnly: true,
       sameSite: true,
+      token: `JWT${token}`,
     });
-    return res.status(200).send(user.toJSON());
+    return res.status(200).send(user);
   } catch (error) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
