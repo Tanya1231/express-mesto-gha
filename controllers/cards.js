@@ -15,8 +15,9 @@ const getCards = async (req, res, next) => {
 
 const createCard = async (req, res, next) => {
   const { name, link } = req.body;
+  const owner = req.user._id;
   try {
-    const card = await Card.create({ name, link, owner: req.user._id });
+    const card = await Card.create({ name, link, owner });
     return res.send(card);
   } catch (err) {
     if (err.name === 'ValidationError') {
@@ -30,14 +31,14 @@ const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
   const owner = req.user._id;
   try {
-    const card = await Card.findByIdAndRemove({ _id: cardId }, { new: true, runValidators: true });
+    const card = await Card.findByIdAndRemove(cardId);
     if (card === null) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
     if (owner !== card.owner.toString()) {
       return next(new ErrorForbidden('Вы не можете удалить чужую карточку'));
     }
-    Card.findByIdAndRemove(cardId);
+    await Card.findByIdAndRemove(cardId);
     return res.send({ message: 'Карточка удалена' });
   } catch (err) {
     if (err.name === 'CastError') {
