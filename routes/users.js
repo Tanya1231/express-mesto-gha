@@ -26,7 +26,7 @@ userRoutes.post('/signin', celebrate({
   }),
 }), login);
 
-userRoutes(auth);
+userRoutes.use(auth);
 
 userRoutes.get('/users', getUsers);
 userRoutes.get('/users/me', getMyInfo);
