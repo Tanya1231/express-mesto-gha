@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { errors } = require('celebrate');
 const { celebrate, Joi } = require('celebrate');
-const auth = require('./middlewares/auth');
 const ErrorNotFound = require('./errors/ErrorNotFound');
 const { login, createUser } = require('./controllers/users');
 
@@ -36,8 +35,6 @@ app.post('/signup', celebrate({
     password: Joi.string().required(),
   }),
 }), createUser);
-
-app.use(auth);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
