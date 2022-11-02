@@ -32,7 +32,8 @@ const userSchema = new Schema({
   email: {
     type: String,
     unique: true,
-    required: [true, 'Обязательное поле'],
+    required: true,
+    index: true,
     validate: {
       validator: validator.isEmail,
       message: 'Неверно заполнен email',
