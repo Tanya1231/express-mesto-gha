@@ -44,7 +44,7 @@ const getMyInfo = async (req, res, next) => {
     if (!user) {
       return next(new ErrorNotFound('Указанный пользователь не найден'));
     }
-    return res.send(user);
+    return res.status(200).send(user);
   } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
@@ -108,7 +108,7 @@ const login = async (req, res, next) => {
   try {
     const user = User.findOne({ email }).select('+password');
     if (!user) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+      return next(new ErrorServer('Неверно введена почта или пароль'));
     }
     const userValid = await bcrypt.compare(password, user.password);
     if (!userValid) {
