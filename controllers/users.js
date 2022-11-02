@@ -114,9 +114,10 @@ const getMyInfo = async (req, res, next) => {
 
 const updateAvatar = async (req, res, next) => {
   const { avatar } = req.body;
+  const owner = req.user._id;
   try {
     const user = User.findByIdAndUpdate(
-      req.user._id,
+      owner,
       { avatar },
       { new: true, runValidators: true },
     );
