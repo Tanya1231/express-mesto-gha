@@ -29,18 +29,18 @@ const createCard = async (req, res, next) => {
 
 const deleteCard = async (req, res, next) => {
   const { cardId } = req.params;
-  const owner = req.user._id;
   try {
-    const card = await Card.findByIdAndRemove(cardId);
+    const card = await Card.findById(cardId);
     if (!card) {
       return next(new ErrorNotFound('Карточка с указанным _id не найдена'));
     }
-    if (owner !== card.owner.toString()) {
+    if (req.user._id !== card.owner.toString()) {
       return next(new ErrorForbidden('Вы не можете удалить чужую карточку'));
     }
+    await card.remove();
     return res.send({ message: 'Карточка удалена' });
   } catch (err) {
-    if (err.name === 'CastError') {
+    if (err.kind === 'ObjectId') {
       return next(new ErrorCode('Переданны неккоректные данные для удаления карточки'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));

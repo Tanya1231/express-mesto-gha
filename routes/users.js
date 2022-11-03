@@ -16,17 +16,19 @@ const method = (value, next) => {
 };
 
 router.get('/', auth, getUsers);
+
 router.get('/me', auth, getMyInfo);
+
 router.get('/:userId', auth, celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().length(24).hex(),
+    userId: Joi.string().length(24).required().hex(),
   }),
 }), auth, getUserById);
 
 router.patch('/me', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
+    name: Joi.string().min(2).max(30).required(),
+    about: Joi.string().min(2).max(30).required(),
   }),
 }), auth, updateProfile);
 
