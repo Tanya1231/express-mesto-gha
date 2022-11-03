@@ -10,11 +10,12 @@ const { login, createUser } = require('./controllers/users');
 
 const { PORT = 3000 } = process.env;
 mongoose.connect('mongodb://localhost:27017/mestodb');
-const method = (value) => {
+
+const method = (value, next) => {
   const result = validator.isURL(value);
   if (result) {
     return value;
-  } throw new Error('URL validation err');
+  } return next(new ErrorNotFound('URL не валиден'));
 };
 
 const app = express();

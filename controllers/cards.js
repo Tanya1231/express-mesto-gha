@@ -81,7 +81,7 @@ const dislikeCard = async (req, res, next) => {
     return res.send(card);
   } catch (err) {
     if (err.name === 'CastError') {
-      return next(new ErrorCode('Переданны неккоректные данные для лайка карточки'));
+      return next(new ErrorCode('Переданны неккоректные данные для дизлайка карточки'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
   }

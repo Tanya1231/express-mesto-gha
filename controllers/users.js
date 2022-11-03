@@ -47,7 +47,7 @@ const createUser = async (req, res, next) => {
       return next(new ErrorCode('Переданные данные не валидны'));
     }
     if (err.code === 11000) {
-      return next(new ErrorConflict(`Пользователь с указанным email ${email} уже существует`));
+      return next(new ErrorConflict('При регистрации указан email, который уже существует на сервере'));
     }
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
@@ -63,7 +63,7 @@ const updateProfile = async (req, res, next) => {
       { new: true, runValidators: true },
     );
     if (!user) {
-      return next(new ErrorNotFound('User с указанным _id не найдена'));
+      return next(new ErrorNotFound('User с указанным _id не найден'));
     }
     return res.send(user);
   } catch (err) {
@@ -79,11 +79,11 @@ const login = async (req, res, next) => {
   try {
     const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+      return next(new ErrorUnauthorized('Передан неверный логин или пароль'));
     }
     const userValid = await bcrypt.compare(password, user.password);
     if (!userValid) {
-      return next(new ErrorUnauthorized('Неверно введена почта или пароль'));
+      return next(new ErrorUnauthorized('Передан неверный логин или пароль'));
     }
     const token = jwt.sign({
       _id: user._id,
@@ -93,7 +93,7 @@ const login = async (req, res, next) => {
       httpOnly: true,
       sameSite: true,
     });
-    return res.status(200).send(user.toJSON());
+    return res.status(200).send({ message: 'Авторизация прошла успешно' });
   } catch (err) {
     return next(new ErrorServer('Ошибка по умолчанию'));
   }
@@ -122,7 +122,7 @@ const updateAvatar = async (req, res, next) => {
       { new: true, runValidators: true },
     );
     if (!user) {
-      return next(new ErrorNotFound('User с указанным _id не найдена'));
+      return next(new ErrorNotFound('User с указанным _id не найден'));
     }
     return res.send(user);
   } catch (err) {
