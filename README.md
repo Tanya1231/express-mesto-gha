@@ -1,1 +1,15 @@
-Проектная работа № 13, 14 от яндекс-практикум express-mesto-gha https://github.com/Tanya1231/express-mesto-gha
+## Проект Express-mesto-gha от Яндекс.Практикум
+
+Бэкенд для проекта Mesto.
+
+Стек технологий:
+- Node.js
+- Express.js
+- Mongoose
+- Celebrate, Joi
+- bcrypt
+
+# Запуск проекта
+
+npm run start
+npm run dev
